@@ -92,3 +92,19 @@ function hook_publisher_unchanging_properties()
 		'taxonomy_term' => array('path'),
 	);
 }
+
+/**
+ * This hook allows other modules to alter entity needs before they are sent over to
+ * the remote. The remote is passed as context.
+ *
+ * @param array                    $entity_need_info The entity need info, as created in
+ *                                                   the execute function of the
+ *                                                   BeginOperation class.
+ * @param \Drupal\publisher\Remote $remote           The remote the entity is being sent to.
+ */
+function hook_publisher_entity_need_alter(array &$entity_need_info, \Drupal\publisher\Remote $remote)
+{
+	if ($remote->name == 'Test Remote') {
+		$entity_need_info['revisions_payload'][0]['test'] = 'test2';
+	}
+}

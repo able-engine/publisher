@@ -11,7 +11,7 @@ class ListRemotes extends FormBase {
 		$remotes = \publisher_get_remotes();
 		$form['#tree'] = true;
 
-		if ($remotes === false) {
+		if (empty($remotes)) {
 			$form['#no-results'] = true;
 			return $form;
 		}

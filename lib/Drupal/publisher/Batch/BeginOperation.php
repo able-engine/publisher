@@ -162,7 +162,7 @@ class BeginOperation extends Operation {
 			}
 
 			// Add the entity to the entities list in the transaction session.
-			$entities[$entity_need->uuid()] = array(
+			$entity_need_info = array(
 				'entity_type' => $entity_need->type(),
 				'entity_uuid' => $entity_need->uuid(),
 				'entity_id' => $entity_need->id(),
@@ -174,6 +174,11 @@ class BeginOperation extends Operation {
 				'original_dependency' => $dependencies[$entity_need->uuid()],
 				'revisions_payload' => $entity_need_payload,
 			);
+
+			// Allow other modules to alter the entity need info.
+			drupal_alter('publisher_entity_need', $entity_need_info, $remote);
+
+			$entities[$entity_need->uuid()] = $entity_need_info;
 
 		}
 
