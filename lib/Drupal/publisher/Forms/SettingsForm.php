@@ -34,7 +34,6 @@ class SettingsForm extends FormBase {
 		);
 		$form['actions']['generate'] = array(
 			'#type' => 'submit',
-			'#submit' => array('publisher_settings_form_generate_submit'),
 			'#value' => 'Generate API Key',
 		);
 		return $form;
@@ -42,17 +41,16 @@ class SettingsForm extends FormBase {
 
 	public function submit($form, &$form_state)
 	{
+		// Process the generate UUID button.
+		if ($form_state['values']['op'] == $form_state['values']['generate']) {
+			module_load_include('inc', 'uuid');
+			$form_state['values']['api_key'] = uuid_generate();
+		}
+
 		variable_set('publisher_enabled', $form_state['values']['enabled']);
 		variable_set('publisher_api_key', $form_state['values']['api_key']);
 		variable_set('publisher_debug_mode', $form_state['values']['debug']);
 		drupal_set_message('Publisher settings saved successfully!');
-	}
-
-	public static function generate($form, &$form_state)
-	{
-		module_load_include('inc', 'uuid');
-		$form_state['values']['api_key'] = uuid_generate();
-		self::submit($form, $form_state);
 	}
 
 }

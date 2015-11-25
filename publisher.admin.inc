@@ -53,12 +53,6 @@ function theme_publisher_list_remotes($variables)
 	return $output;
 }
 
-// Form Handlers - These are here because of https://drupal.org/node/2166371
-function publisher_settings_form_generate_submit($form, &$form_state)
-{
-	Drupal\publisher\Forms\SettingsForm::generate($form, $form_state);
-}
-
 function publisher_create_remote_form_validate_machine_name($machine_name)
 {
 	return Drupal\publisher\Forms\CreateRemote::validateMachineName($machine_name);
