@@ -6,7 +6,7 @@ version = 7.x-1.x-dev
 
 dependencies[] = xautoload
 dependencies[] = entity
-dependencies[] = entity_menu_links
+dependencies[] = menu_entity
 dependencies[] = ablecore
 dependencies[] = uuid
 dependencies[] = entity_modified
