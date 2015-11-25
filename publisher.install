@@ -1,0 +1,307 @@
+<?php
+
+function publisher_install()
+{
+	// Create the variables and set them to their default values.
+	variable_set('publisher_enabled', false);
+	variable_set('publisher_api_key', 'changeme');
+}
+
+function publisher_uninstall()
+{
+	// Delete the created variables.
+	variable_del('publisher_enabled');
+	variable_del('publisher_api_key');
+}
+
+function publisher_schema()
+{
+	$schema['publisher_remotes'] = array(
+		'description' => 'Stores configuration options for publisher remotes.',
+		'fields' => array(
+			'rid' => array(
+				'description' => 'The primary identifier for a remote.',
+				'type' => 'serial',
+				'unsigned' => true,
+				'not null' => true,
+			),
+			'name' => array(
+				'description' => 'The machine name for a remote.',
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => true,
+				'default' => '',
+			),
+			'label' => array(
+				'description' => 'The human-readable name for the remote.',
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => true,
+				'default' => '',
+			),
+			'url' => array(
+				'description' => 'The remote endpoint to connect to.',
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => true,
+				'default' => '',
+			),
+			'api_key' => array(
+				'description' => 'The API key to authenticate with on the remote end.',
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => true,
+				'default' => '',
+			),
+			'enabled' => array(
+				'description' => 'Whether or not the remote is enabled.',
+				'type' => 'int',
+				'not null' => true,
+				'default' => 0,
+			),
+			'weight' => array(
+				'description' => 'Where the remote should appear in a list.',
+				'type' => 'int',
+				'not null' => true,
+				'default' => 0,
+			),
+			'send' => array(
+				'description' => 'Whether or not content can be sent to this remote.',
+				'type' => 'int',
+				'not null' => true,
+				'default' => 1,
+			),
+			'receive' => array(
+				'description' => 'Whether or not content can be received from this remote.',
+				'type' => 'int',
+				'not null' => true,
+				'default' => 1,
+			),
+		),
+		'primary key' => array('rid'),
+		'unique keys' => array(
+			'name' => array('name'),
+		),
+	);
+
+	$schema['publisher_entity_tracking'] = array(
+		'description' => 'Keeps track of entity changes for Publisher.',
+		'fields' => array(
+			'uuid' => array(
+				'type' => 'varchar',
+				'length' => 36,
+				'not null' => true,
+				'description' => 'The UUID of the entity',
+			),
+			'entity_type' => array(
+				'type' => 'varchar',
+				'length' => 32,
+				'not null' => true,
+				'description' => 'The type of entity',
+			),
+			'vuuid' => array(
+				'type' => 'varchar',
+				'length' => 64,
+				'not null' => true,
+				'description' => 'The publisher-generated revision UUID for the entity',
+			),
+			'changed' => array(
+				'type' => 'int',
+				'not null' => true,
+				'unsigned' => true,
+				'description' => 'The timestamp when the entity was changed',
+			),
+			'remote' => array(
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => true,
+				'description' => 'The machine name of the remote the entity will be synced with',
+			),
+			'date_synced' => array(
+				'type' => 'int',
+				'not null' => true,
+				'unsigned' => true,
+				'default' => 0,
+				'description' => 'The timestamp of the last time the entity was successfully synced with the remote.',
+			),
+			'uid' => array(
+				'type' => 'int',
+				'not null' => true,
+				'unsigned' => true,
+				'default' => 0,
+				'description' => 'The ID of the user that sent the entity last.',
+			),
+		),
+		'indexes' => array(
+			'uuid' => array('uuid'),
+			'uuid_entity_type' => array('uuid', 'entity_type'),
+			'uid' => array('uid'),
+		),
+	);
+
+	$schema['publisher_pending_relationships'] = array(
+		'description' => 'Keeps track of all pending relationships to save.',
+		'fields' => array(
+			'source_type' => array(
+				'type' => 'varchar',
+				'length' => 32,
+				'not null' => true,
+				'description' => 'The type of the source entity.',
+			),
+			'source_uuid' => array(
+				'type' => 'varchar',
+				'length' => 36,
+				'not null' => true,
+				'description' => 'The UUID of the source entity.',
+			),
+			'source_vuuid' => array(
+				'type' => 'varchar',
+				'length' => 36,
+				'not null' => true,
+				'description' => 'The VUUID of the source entity.',
+				'default' => '',
+			),
+			'destination_type' => array(
+				'type' => 'varchar',
+				'length' => 32,
+				'not null' => true,
+				'description' => 'The type of the destination entity.',
+			),
+			'destination_uuid' => array(
+				'type' => 'varchar',
+				'length' => 36,
+				'not null' => true,
+				'description' => 'The UUID of the destination entity.',
+			),
+			'destination_vuuid' => array(
+				'type' => 'varchar',
+				'length' => 36,
+				'not null' => true,
+				'description' => 'The VUUID of the destination entity.',
+				'default' => '',
+			),
+			'field_name' => array(
+				'type' => 'varchar',
+				'length' => 64,
+				'not null' => true,
+				'description' => 'The name of the field this relationship is on.',
+			),
+			'delta' => array(
+				'type' => 'int',
+				'unsigned' => true,
+				'not null' => true,
+				'description' => 'The delta the relationship value should be assigned to.',
+			),
+			'relationship_handler' => array(
+				'type' => 'varchar',
+				'length' => 32,
+				'not null' => true,
+				'description' => 'The name of the class that will handle this relationship.',
+			),
+			'relationship_arguments' => array(
+				'type' => 'text',
+				'not null' => true,
+				'description' => 'A serialized array of arguments to pass to the relationship.',
+			),
+			'last_checked' => array(
+				'type' => 'int',
+				'unsigned' => true,
+				'not null' => true,
+				'default' => 0,
+				'description' => 'The timestamp of the last time this relationship was checked.',
+			),
+		),
+		'indexes' => array(
+			'source' => array('source_type', 'source_uuid', 'source_vuuid'),
+			'destination' => array('destination_type', 'destination_uuid', 'destination_vuuid'),
+		),
+	);
+
+	$schema['publisher_entity_deleted'] = array(
+		'description' => 'Stores tracking information about entities that have been deleted.',
+		'fields' => array(
+			'entity_uuid' => array(
+				'type' => 'varchar',
+				'length' => 36,
+				'not null' => true,
+				'description' => 'The UUID of the entity that was deleted.',
+			),
+			'entity_type' => array(
+				'type' => 'varchar',
+				'length' => 32,
+				'not null' => true,
+				'description' => 'The type of entity that was deleted.',
+			),
+			'entity_title' => array(
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => true,
+				'description' => 'The title of the entity.',
+			),
+			'deleted' => array(
+				'type' => 'int',
+				'unsigned' => true,
+				'not null' => true,
+				'default' => 0,
+				'description' => 'The timestamp of when the entity was deleted.',
+			),
+			'remote' => array(
+				'type' => 'varchar',
+				'not null' => true,
+				'length' => 255,
+				'description' => 'The name of the remote this deletion represents.',
+			),
+		),
+		'indexes' => array(
+			'entity_uuid_type' => array('entity_uuid', 'entity_type'),
+		),
+	);
+
+	return $schema;
+}
+
+/**
+ * Create the entity tracking table.
+ */
+function publisher_update_7001()
+{
+	$schema = drupal_get_schema('publisher_entity_tracking', true);
+
+	if (!db_table_exists('publisher_entity_tracking')) {
+		db_create_table('publisher_entity_tracking', $schema);
+	}
+}
+
+/**
+ * Create the pending relationships table.
+ */
+function publisher_update_7002()
+{
+	$schema = drupal_get_schema('publisher_pending_relationships', true);
+
+	if (!db_table_exists('publisher_pending_relationships')) {
+		db_create_table('publisher_pending_relationships', $schema);
+	}
+}
+
+/**
+ * Create the deleted entity tracking table.
+ */
+function publisher_update_7003()
+{
+	$schema = drupal_get_schema('publisher_entity_deleted', true);
+
+	if (!db_table_exists('publisher_entity_deleted')) {
+		db_create_table('publisher_entity_deleted', $schema);
+	}
+}
+
+/**
+ * Truncate the publisher_pending_relationships table to fix issues with relationships.
+ */
+function publisher_update_7004()
+{
+	if (db_table_exists('publisher_pending_relationships')) {
+		db_truncate('publisher_pending_relationships');
+	}
+}

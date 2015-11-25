@@ -1,0 +1,13 @@
+name = Publisher
+description = Packages entities and sends them to supported destinations.
+package = Publishing
+core = 7.x
+version = 7.x-1.x-dev
+
+dependencies[] = xautoload
+dependencies[] = entity
+dependencies[] = entity_menu_links
+dependencies[] = ablecore
+dependencies[] = uuid
+dependencies[] = entity_modified
+dependencies[] = node_menu_link

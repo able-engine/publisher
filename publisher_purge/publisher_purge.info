@@ -1,0 +1,10 @@
+name = Publisher Purge
+description = Provides publisher integration with the Acquia Purge module, allowing control over purge actions when a specific bundle is deployed.
+package = Publishing
+core = 7.x
+version = 7.x-1.x-dev
+
+dependencies[] = ablecore
+dependencies[] = xautoload
+dependencies[] = publisher
+dependencies[] = acquia_purge

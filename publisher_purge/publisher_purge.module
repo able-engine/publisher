@@ -1,0 +1,126 @@
+<?php
+use Drupal\publisher_purge\Forms\ConfigureContentTypeForm;
+
+/**
+ * Implements hook_menu()
+ */
+function publisher_purge_menu()
+{
+	return \AbleCore\Modules\PathManager::init()
+		->access(array('administer publisher purge'))
+		->define('admin/config/publisher/purge', 'admin@list', 'Publisher Purge', array(
+			'description' => 'Manage content-type based purge settings.',
+		))
+		->define('admin/config/publisher/purge/%node_type', 'drupal_get_form', 'Manage Content Type', array(
+			'title callback' => 'action_content_type_title',
+			'file' => 'callbacks/admin.php',
+			'page arguments' => array('publisher_purge_configure_content_type', 4),
+		))
+		->fin() // /administer publisher purge
+		->fin();
+}
+
+/**
+ * Implements hook_theme()
+ */
+function publisher_purge_theme()
+{
+	return \AbleCore\Modules\ThemeManager::init()
+		->defineFunction('publisher_purge_configure_content_type', 'form', 'themes/form.inc')
+		->defineFunction('publisher_purge_configure_content_type_table', 'paths_form', 'themes/form.inc')
+		->fin();
+}
+
+/**
+ * Implements hook_permission()
+ */
+function publisher_purge_permission()
+{
+	return array(
+		'administer publisher purge' => array(
+			'title' => t('Administer Publisher Purge'),
+			'description' => t('Perform administrative actions related to publisher purge.'),
+		),
+	);
+}
+
+/**
+ * Implements hook_ablecore_form_info()
+ */
+function publisher_purge_ablecore_form_info()
+{
+	return array(
+		'publisher_purge_configure_content_type' => new ConfigureContentTypeForm(),
+	);
+}
+
+/**
+ * Implements hook_publisher_entity_received()
+ */
+function publisher_purge_publisher_entity_received(\Drupal\publisher\Entity $entity, \Drupal\publisher\Remote $remote)
+{
+	// We only want to deal with nodes currently.
+	if ($entity->type() != 'node') return;
+
+	// Get the paths to purge for the node's bundle.
+	$paths = publisher_purge_get_content_type_paths($entity->bundle());
+
+	// Purge each of the paths.
+	acquia_purge_purge_paths($paths);
+}
+
+/**
+ * Gets the paths to be purged per content type.
+ *
+ * @param string $content_type The machine name of the content type.
+ *
+ * @return array An array of additional paths to clear.
+ */
+function publisher_purge_get_content_type_paths($content_type)
+{
+	return variable_get(_publisher_purge_get_content_type_variable($content_type), array());
+}
+
+/**
+ * Sets the paths to clear for the specified content type.
+ *
+ * @param string $content_type The name of the content type to update the settings for.
+ * @param array  $settings     An array of additional paths to clear.
+ */
+function publisher_purge_set_content_type_paths($content_type, array $settings)
+{
+	variable_set(_publisher_purge_get_content_type_variable($content_type), $settings);
+}
+
+/**
+ * Gets all content types and their additional paths to clear.
+ *
+ * @return array
+ */
+function publisher_purge_get_all_content_type_paths()
+{
+	$settings = array();
+	foreach (node_type_get_types() as $machine_name => $type) {
+		$settings[$machine_name] = publisher_purge_get_content_type_paths($machine_name);
+	}
+	return $settings;
+}
+
+/**
+ * Internal function to get the variable name for a content type's paths,
+ * given the name of the content type.
+ *
+ * @param string $content_type The name of the content type to generate
+ *                             the variable name for.
+ *
+ * @return string The name of the variable.
+ */
+function _publisher_purge_get_content_type_variable($content_type)
+{
+	return 'publisher_purge_' . str_replace('-', '_', $content_type) . '_settings';
+}
+
+/**
+ * Implements hook_ablecore()
+ */
+function publisher_purge_ablecore() {}

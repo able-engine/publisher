@@ -1,0 +1,236 @@
+<?php
+
+use AbleCore\Modules\PathManager;
+use Drupal\publisher\Dependencies\RevisionResolver;
+use Drupal\publisher\Forms\EntityStatusForm;
+use Drupal\publisher\Remote;
+use Drupal\publisher\Entity;
+use Drupal\publisher\EntityDiff;
+use Drupal\publisher\Dependencies\Resolver;
+use Drupal\publisher\Batch\Operation;
+use Drupal\publisher\Batch\OperationQueue;
+use Drupal\publisher\Forms\SyncMenuLinksForm;
+use Drupal\publisher\Transaction;
+
+require_once('publisher.admin.inc');
+
+function publisher_menu()
+{
+	$path_manager = PathManager::init()
+
+		// Administration pages.
+		->access(array('administer publisher'))
+		->define('admin/config/publisher', 'system_admin_menu_block_page', 'Publisher', array(
+			'file' => 'system.admin.inc',
+			'file path' => drupal_get_path('module', 'system'),
+			'description' => 'Lists administration actions for the publisher module.',
+		))
+		->define('admin/config/publisher/remotes', 'drupal_get_form', 'Remotes', array(
+			'page arguments' => array('publisher_list_remotes'),
+			'description' => 'Manage remote sites publisher can communicate with.',
+		))
+		->define('admin/config/publisher/remotes/%', 'pages@edit_remote', 'Edit Remote')
+		->define('admin/config/publisher/remotes/%/toggle', 'pages@toggle_remote', 'Toggle Remote')
+		->define('admin/config/publisher/remotes/%/delete', 'pages@delete_remote', 'Delete Remote')
+		->define('admin/config/publisher/remotes/create', 'pages@create_remote', 'Create Remote', array(
+			'type' => MENU_LOCAL_ACTION,
+		))
+		->define('admin/config/publisher/settings', 'pages@settings', 'Settings', array(
+			'description' => 'Manage global publisher settings.',
+		))
+		->define('admin/config/publisher/results', 'pages@results', 'Batch Results', array(
+			'type' => MENU_CALLBACK,
+		))
+		->define('admin/config/publisher/sync-menu-uuids', 'sync@menu', 'Sync Menu Link UUIDs', array(
+			'description' => 'Copy all Menu Link UUIDs from this server to a remote.',
+		))
+		->fin() // /access(administer publisher)
+
+		// API Pages.
+		->define('api/publisher/%', 'api@handle', 'Publisher - API', array(
+			'type' => MENU_CALLBACK,
+			'delivery callback' => 'drupal_json_output',
+		))
+
+		// System Pages.
+		->define('publisher/begin', 'send@begin', 'Select Entities', array(
+			'type' => MENU_CALLBACK,
+		))
+		->define('publisher/feedback', 'send@feedback', 'Select Entities', array(
+			'type' => MENU_CALLBACK,
+		))
+		->define('publisher/finish', 'send@finish', 'Finishing...', array(
+			'type' => MENU_CALLBACK,
+		))
+
+		// Entity tracking pages.
+		->access(array('view publisher change status'))
+		->define('node/%node/publisher', 'node@status', 'Publisher Status', array(
+			'type' => MENU_LOCAL_TASK,
+		))
+		->define('node/%node/publisher/all', 'node@status', 'All', array(
+			'type' => MENU_DEFAULT_LOCAL_TASK,
+			'weight' => -1,
+		))
+		->define('admin/reports/publisher', 'report@all', 'Publisher')
+		->define('admin/reports/publisher/all', 'report@all', 'All', array(
+			'type' => MENU_DEFAULT_LOCAL_TASK,
+			'weight' => -2,
+		))
+		->define('admin/reports/publisher/session', 'report@session', 'Session', array(
+			'type' => MENU_LOCAL_TASK,
+			'weight' => -1,
+		));
+
+	// Add each of the existing remote-specific paths.
+	foreach (publisher_get_remotes() as $remote) {
+		$path_manager->define('admin/reports/publisher/' . $remote->name, 'report@single',
+			$remote->label, array(
+				'type' => MENU_LOCAL_TASK,
+				'page arguments' => array($remote),
+			));
+		$path_manager->define('admin/reports/publisher/' . $remote->name . '/changed', 'report@single',
+			'Changed', array(
+				'type' => MENU_DEFAULT_LOCAL_TASK,
+				'page arguments' => array($remote),
+			));
+		$path_manager->define('admin/reports/publisher/' . $remote->name . '/deleted', 'report@deleted',
+			'Deleted', array(
+				'type' => MENU_LOCAL_TASK,
+				'page arguments' => array($remote),
+			));
+		$path_manager->define('node/%node/publisher/' . $remote->name, 'node@remote_status',
+			$remote->label, array(
+				'type' => MENU_LOCAL_TASK,
+				'page arguments' => array(1, $remote),
+			));
+	}
+
+	return $path_manager->fin() // /view publisher change status
+		->fin();
+}
+
+/**
+ * Implements hook_permission()
+ */
+function publisher_permission()
+{
+	return array(
+		'administer publisher' => array(
+			'title' => t('Administer Publisher'),
+			'description' => t('Perform administration tasks for publisher.'),
+		),
+		'send with publisher' => array(
+			'title' => t('Send Entities with Publisher'),
+			'description' => t('Send entities to any remote with publisher.'),
+		),
+		'view publisher change status' => array(
+			'title' => t('View Published Status'),
+			'description' => t('View whether or not specific entities have already been sent '
+				. 'to production.'),
+		),
+	);
+}
+
+/**
+ * Implements hook_theme()
+ */
+function publisher_theme()
+{
+	return \AbleCore\Modules\ThemeManager::init()
+		->defineFunction('publisher_list_remotes', 'form', 'publisher.admin.inc')
+		->defineFunction('publisher_select_entities_form', 'form', 'themes/entity_select.inc')
+		->fin();
+}
+
+/**
+ * Implements hook_admin_paths()
+ */
+function publisher_admin_paths()
+{
+	return array(
+		'node/*/publisher*' => true,
+		'publisher/*' => true,
+	);
+}
+
+/**
+ * Implements hook_rules_directory()
+ */
+function publisher_rules_directory()
+{
+	return 'lib/Drupal/publisher/Rules';
+}
+
+/**
+ * Implements hook_rules_action_access()
+ */
+function publisher_rules_action_access()
+{
+	return user_access('send with publisher');
+}
+
+/**
+ * Implements hook_ablecore_form_info()
+ */
+function publisher_ablecore_form_info()
+{
+	return array(
+		'publisher_list_remotes' => new \Drupal\publisher\Forms\ListRemotes(),
+		'publisher_settings' => new \Drupal\publisher\Forms\SettingsForm(),
+		'publisher_create_remote' => new \Drupal\publisher\Forms\CreateRemote(),
+		'publisher_delete_remote' => new \Drupal\publisher\Forms\DeleteRemote(),
+		'publisher_sync_menu_link_uuids_form' => new SyncMenuLinksForm(),
+		'publisher_entity_tracking_status' => new EntityStatusForm(),
+		'publisher_select_entities_form' => new \Drupal\publisher\Forms\SelectEntitiesForm(),
+		'publisher_session_status_form' => new \Drupal\publisher\Forms\SessionForm(),
+		'publisher_deleted_entities_form' => new \Drupal\publisher\Forms\DeletedEntitiesForm(),
+	);
+}
+
+/**
+ * Implements hook_ablecore()
+ */
+function publisher_ablecore() { }
+
+/**
+ * Implements hook_node_operations()
+ */
+function publisher_node_operations()
+{
+	$operations = array();
+	foreach (publisher_get_remotes() as $remote) {
+		$operations['publisher_send_to_' . $remote->name] = array(
+			'label' => t('Send content to @label', array('@label' => $remote->label)),
+			'callback' => 'publisher_send_nodes',
+			'callback arguments' => array('remote' => $remote),
+		);
+	}
+	return $operations;
+}
+
+/**
+ * Implements hook_action_info()
+ */
+function publisher_action_info()
+{
+	$actions = array();
+	$actions['publisher_send_to_remote_action'] = array(
+		'type' => 'entity',
+		'label' => t('Send to Publisher Remote'),
+		'configurable' => true,
+		'triggers' => array('any'),
+		'vbo_configurable' => true,
+	);
+	return $actions;
+}
+
+/**
+ * Gets the current API key.
+ *
+ * @return string|null
+ */
+function publisher_get_api_key()
+{
+	return variable_get('publisher_api_key');
+}
