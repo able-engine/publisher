@@ -22,7 +22,7 @@ function publisher_get_remotes()
 		}
 
 		if (count($remotes) <= 0) {
-			$remotes = false;
+			$remotes = array();
 		}
 	}
 
