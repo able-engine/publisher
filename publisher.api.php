@@ -108,3 +108,18 @@ function hook_publisher_entity_need_alter(array &$entity_need_info, \Drupal\publ
 		$entity_need_info['revisions_payload'][0]['test'] = 'test2';
 	}
 }
+
+/**
+ * This hook allows other modules to alter entities before they are imported into the
+ * current site. The remote is passed as context.
+ *
+ * @param array                    $entity The entity info. Contains the entity_type, uuid, vuuid,
+ *                                         and revision history.
+ * @param \Drupal\publisher\Remote $remote The remote the entity is coming from.
+ */
+function hook_publisher_import_entity_alter(array &$entity, \Drupal\publisher\Remote $remote)
+{
+	if ($remote->name == 'Test Remote') {
+		$entity['revisions'] = array();
+	}
+}

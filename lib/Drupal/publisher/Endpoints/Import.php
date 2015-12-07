@@ -40,11 +40,17 @@ class Import extends Endpoint {
 		publisher_set_flag('importing_entities');
 
 		foreach ($payload['entities'] as $entity) {
+
+			// Allow users to alter entity before it's imported to the system.
+			drupal_alter('publisher_import_entity', $entity, $this->remote);
+
+			// Import the entity.
 			if (!$this->importEntity($entity)) {
 				drupal_set_message('There was an error importing one of the entities. Because the entity that failed ' .
 					'might have been a dependency of another entity, the operation has been cancelled.', 'error');
 				break;
 			}
+
 		}
 
 		// Mark the remote as finished so we can send to it later.
