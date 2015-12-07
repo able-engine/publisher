@@ -123,3 +123,17 @@ function hook_publisher_import_entity_alter(array &$entity, \Drupal\publisher\Re
 		$entity['revisions'] = array();
 	}
 }
+
+/**
+ * This hook allows other modules to alter entity relationships before they are sent
+ * over to the receiving server. The remote is passed as context.
+ *
+ * @param array                    $relationships The list of relationships to be sent over to the
+ *                                                receiving server.
+ * @param \Drupal\publisher\Entity $entity        The entity being sent.
+ * @param \Drupal\publisher\Remote $remote        The remote the entity is going to.
+ */
+function hook_publisher_relationships_alter(array &$relationships, \Drupal\publisher\Entity $entity, \Drupal\publisher\Remote $remote)
+{
+	// Alter the relationships.
+}

@@ -80,6 +80,10 @@ class BeginOperation extends Operation {
 			foreach ($resolver->relationships() as $relationship) {
 				$relationships[] = $relationship;
 			}
+
+			// Allow other modules to alter the relationships before they're sent over.
+			drupal_alter('publisher_relationships', $relationships, $entity, $remote);
+
 			$transaction_session->setRelationships($relationships);
 		}
 
