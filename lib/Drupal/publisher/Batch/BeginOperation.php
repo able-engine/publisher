@@ -182,7 +182,10 @@ class BeginOperation extends Operation {
 			// Allow other modules to alter the entity need info.
 			drupal_alter('publisher_entity_need', $entity_need_info, $remote);
 
-			$entities[$entity_need->uuid()] = $entity_need_info;
+			// If $entity_need_info has a value, add the entity.
+			if (!empty($entity_need_info)) {
+				$entities[$entity_need->uuid()] = $entity_need_info;
+			}
 
 		}
 

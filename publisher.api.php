@@ -107,6 +107,11 @@ function hook_publisher_entity_need_alter(array &$entity_need_info, \Drupal\publ
 	if ($remote->name == 'Test Remote') {
 		$entity_need_info['revisions_payload'][0]['test'] = 'test2';
 	}
+
+	// You can also tell publisher to not send the entity by setting the $entity_need_info to
+	// something that would equate to an empty value, like an empty array (or false, or an empty
+	// string, etc).
+	$entity_need_info = array();
 }
 
 /**
