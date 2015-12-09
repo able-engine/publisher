@@ -35,7 +35,7 @@ class SyncMenuLinksForm extends FormBase {
 
 	public function submit($form, &$form_state)
 	{
-		module_load_include('inc', 'publisher', 'uuid_sync');
+		module_load_include('inc', 'publisher', 'menu_uuid_sync');
 		publisher_sync_menu_link_uuids(Remote::load($form_state['values']['remote']));
 	}
 

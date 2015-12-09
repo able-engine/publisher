@@ -2,8 +2,8 @@
 
 namespace Drupal\publisher\Endpoints;
 
+use Drupal\publisher\Dependencies\HandlerBase;
 use Drupal\publisher\Dependencies\InvalidReferenceDefinitionException;
-use Drupal\publisher\Dependencies\TextAreaHandlers\HandlerBase;
 use Drupal\publisher\EntityPathHelper;
 
 class SyncMenuLinkUUIDs extends Endpoint {
