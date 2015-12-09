@@ -222,9 +222,9 @@ trait RelationshipHandler  {
 				throw new \Exception('No revisions were found for the entity that should support revisions.');
 			}
 			$index = array_search($relationship['source_vuuid'], $source_entity_revisions);
-			foreach (array_slice($source_entity_revisions, $index) as $revision_uuid) {
+			foreach (array_slice($source_entity_revisions, $index) as $revision_ids) {
 				$mock_relationship = $relationship;
-				$mock_relationship['source_vuuid'] = $revision_uuid;
+				$mock_relationship['source_vuuid'] = $revision_ids['uuid'];
 				$mock_stub_entity = $this->getSourceStubEntity($mock_relationship);
 				$field_value = array($key => $destination_entity_id);
 				$field_value = array_replace_recursive($field_value, $value_overrides);
@@ -284,6 +284,7 @@ trait RelationshipHandler  {
 				'@type' => $definition['entity_type'],
 				'@uuid' => $definition['uuid'],
 			)));
+
 		}
 
 		return $entity;

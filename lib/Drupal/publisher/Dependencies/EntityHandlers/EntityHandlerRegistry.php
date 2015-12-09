@@ -15,6 +15,7 @@ class EntityHandlerRegistry {
 
 		// Register handlers.
 		self::$handlers[] = new MenuLinkHandler();
+		self::$handlers[] = new TaxonomyTermHandler();
 		if (module_exists('redirect') && module_exists('redirect_uuid')) {
 			self::$handlers[] = new URLRedirectHandler();
 			self::$handlers[] = new URLRedirectEntityHandler();

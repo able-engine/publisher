@@ -104,9 +104,18 @@ abstract class HandlerBase {
 		$value['uuid'] = $entity->uuid();
 		$value['vuuid'] = $entity->vuuid();
 		$value['entity_type'] = $entity->type();
+		$value['bundle'] = publisher_map_entity_bundle($entity->type(), $entity->bundle());
 		$value['original'] = $entity->id();
 		$value['original_revision'] = $entity->revision();
-		$value['revisions'] = Entity::getAllRevisions($entity->id(), $entity->type());
+		$revisions = Entity::getAllRevisions($entity->id(), $entity->type());
+		if (is_array($revisions)) {
+			$value['revisions'] = array();
+			foreach ($revisions as $revision_ids) {
+				$value['revisions'][] = $revision_ids['uuid'];
+			}
+		} else {
+			$value['revisions'] = false;
+		}
 
 		return $value;
 	}

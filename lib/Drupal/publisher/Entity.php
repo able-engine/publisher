@@ -213,6 +213,16 @@ class Entity {
 		return $ids[$type][$entity_id];
 	}
 
+	/**
+	 * Gets all revisions for the specified entity. Each item contains the ID and
+	 * UUID of the revision.
+	 *
+	 * @param int        $entity_id The ID of the entity to get revisions for.
+	 * @param string     $type      The type of entity the ID is for.
+	 * @param bool|false $reset
+	 *
+	 * @return array|bool
+	 */
 	public static function getAllRevisions($entity_id, $type, $reset = false)
 	{
 		$ids = &drupal_static(__FUNCTION__, array(), $reset);

@@ -70,6 +70,12 @@ class FileHandler extends DefinitionHandlerBase {
 				throw new FileHandlerException('There was an error fetching the contents of the file.');
 			}
 
+			// Make sure the parent directory exists.
+			$directory_uri = str_replace(drupal_basename($value['original_path']), '', $value['original_path']);
+			if (!is_dir(drupal_realpath($directory_uri))) {
+				drupal_mkdir($directory_uri, 0777, true);
+			}
+
 			// Save the file.
 			$file = file_save_data($contents, $value['original_path']);
 			if (!$file || !$file->fid) {

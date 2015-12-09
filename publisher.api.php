@@ -142,3 +142,23 @@ function hook_publisher_relationships_alter(array &$relationships, \Drupal\publi
 {
 	// Alter the relationships.
 }
+
+/**
+ * Allows other modules to specify a bundle map, grouped by entity type.
+ *
+ * @return array
+ */
+function hook_publisher_bundle_maps()
+{
+	/*
+	 * For example, let's assume you want to map the content type 'page' to the
+	 * content type 'article' on the receiving server. You would do something
+	 * like this:
+	 */
+
+	return array(
+		'node' => array(
+			'page' => 'article',
+		)
+	);
+}

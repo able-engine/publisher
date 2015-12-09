@@ -36,7 +36,11 @@ class Begin extends Endpoint {
 	{
 		$revision_uuids = array();
 		foreach ($revisions as $revision) {
-			$revision_uuids[] = $revision['uuid'];
+			if (is_array($revision)) {
+				$revision_uuids[] = $revision['uuid'];
+			} else {
+				$revision_uuids[] = $revision;
+			}
 		}
 
 		// Get the revisions on our end and find the nearest one that matches.
@@ -55,6 +59,16 @@ class Begin extends Endpoint {
 	{
 		$required = array();
 		foreach ($dependencies as $dependency) {
+
+			// If the entity bundle does not exist, skip it and move on.
+			// TODO: This might cause some ramifications with required dependencies, but
+			// the relationships feature should take care of this.
+			$info = entity_get_info($dependency['entity_type']);
+			if (array_key_exists('bundles', $info) && is_array($info['bundles'])) {
+				if ($dependency['bundle'] && !array_key_exists($dependency['bundle'], $info['bundles'])) {
+					continue;
+				}
+			}
 
 			$entity = Entity::loadByUUID($dependency['uuid'], $dependency['entity_type']);
 			if (!$entity || (array_key_exists('force', $dependency) && $dependency['force'] === true)) {
