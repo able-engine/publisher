@@ -44,6 +44,10 @@ function publisher_menu()
 		->define('admin/config/publisher/sync-menu-uuids', 'sync@menu', 'Sync Menu Link UUIDs', array(
 			'description' => 'Copy all Menu Link UUIDs from this server to a remote.',
 		))
+		->define('admin/config/publisher/sync-entities', 'drupal_get_form', 'Sync Entity UUIDs', array(
+			'page arguments' => array('publisher_sync_entity_type_form'),
+			'description' => 'Select an entity type and sync UUIDs between this site and a remote site.',
+		))
 		->fin() // /access(administer publisher)
 
 		// API Pages.
@@ -185,6 +189,7 @@ function publisher_ablecore_form_info()
 		'publisher_select_entities_form' => new \Drupal\publisher\Forms\SelectEntitiesForm(),
 		'publisher_session_status_form' => new \Drupal\publisher\Forms\SessionForm(),
 		'publisher_deleted_entities_form' => new \Drupal\publisher\Forms\DeletedEntitiesForm(),
+		'publisher_sync_entity_type_form' => new \Drupal\publisher\Forms\SyncEntityUUIDs(),
 	);
 }
 

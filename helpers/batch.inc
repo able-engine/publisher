@@ -10,3 +10,9 @@ function publisher_batch_operation_finished($success, array $results, array $ope
 		\Drupal\publisher\TransactionSession::complete();
 	}
 }
+
+function publisher_entity_uuid_sync_complete($success, array $results, array $operations)
+{
+	\Drupal\publisher\Batch\Operation::exportContextResults($results);
+	drupal_goto('admin/content');
+}

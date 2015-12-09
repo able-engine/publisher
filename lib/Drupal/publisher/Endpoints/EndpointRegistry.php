@@ -16,6 +16,7 @@ class EndpointRegistry {
 		self::$endpoints[] = 'Begin';
 		self::$endpoints[] = 'Import';
 		self::$endpoints[] = 'SyncMenuLinkUUIDs';
+		self::$endpoints[] = 'SyncEntityUUIDs';
 		self::$endpoints[] = 'Delete';
 
 		return self::$endpoints;
