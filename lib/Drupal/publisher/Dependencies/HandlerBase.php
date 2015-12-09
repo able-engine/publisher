@@ -104,7 +104,15 @@ abstract class HandlerBase {
 		$value['uuid'] = $entity->uuid();
 		$value['vuuid'] = $entity->vuuid();
 		$value['entity_type'] = $entity->type();
-		$value['bundle'] = publisher_map_entity_bundle($entity->type(), $entity->bundle());
+
+		// Handle the bundle.
+		$info = entity_get_info($entity->type());
+		if (is_array($info['bundles']) && array_key_exists($entity->bundle(), $info['bundles'])) {
+			$value['bundle'] = publisher_map_entity_bundle($entity->type(), $entity->bundle());
+		} else {
+			$value['bundle'] = false;
+		}
+
 		$value['original'] = $entity->id();
 		$value['original_revision'] = $entity->revision();
 		$revisions = Entity::getAllRevisions($entity->id(), $entity->type());
