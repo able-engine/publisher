@@ -12,7 +12,10 @@ class TextAreaFileReferenceHandler extends HandlerBase {
 	{
 		// Record all file URLs in an array.
 		$files_found = array();
-		$contents = $this->getDOMContents($this->getContents($value));
+		$contents_value = $this->getContents($value);
+		if (!$contents_value) return;
+		$contents = $this->getDOMContents($contents_value);
+		if (!$contents) return;
 
 		$files_found += $this->parseTags($contents->xpath('//img'), 'src');
 		$files_found += $this->parseTags($contents->xpath('//a'), 'href');

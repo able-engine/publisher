@@ -107,7 +107,7 @@ abstract class HandlerBase {
 
 		// Handle the bundle.
 		$info = entity_get_info($entity->type());
-		if (is_array($info['bundles']) && array_key_exists($entity->bundle(), $info['bundles'])) {
+		if (is_array($info['bundles']) && (is_string($entity->bundle()) || is_integer($entity->bundle())) && array_key_exists($entity->bundle(), $info['bundles'])) {
 			$value['bundle'] = publisher_map_entity_bundle($entity->type(), $entity->bundle());
 		} else {
 			$value['bundle'] = false;

@@ -69,7 +69,7 @@ class BeginOperation extends Operation {
 			$dependencies[$entity->uuid()]['source_required'] = false;
 			$status = publisher_entity_tracking_get_status($entity->uuid(),
 				$entity->type(), $remote->name);
-			if (!$status->date_synced) {
+			if ($status && !$status->date_synced) {
 				$dependencies[$entity->uuid()]['source_required'] = true;
 			}
 		}

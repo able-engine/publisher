@@ -9,7 +9,9 @@ class TextAreaLinkReferenceHandler extends HandlerBase {
 	protected function handleSingleValue($entity_type, $field_type, $field_name, &$value, $index)
 	{
 		$references = array();
-		$contents = $this->getDOMContents($this->getContents($value));
+		$contents_value = $this->getContents($value);
+		if (!$contents_value) return;
+		$contents = $this->getDOMContents($contents_value);
 
 		// Verify that we actually have contents.
 		if (!$contents) return;

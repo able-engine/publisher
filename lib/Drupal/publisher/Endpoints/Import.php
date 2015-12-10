@@ -338,7 +338,7 @@ class Import extends Endpoint {
 				unset($definition[$key]);
 				continue;
 			}
-			if (is_array($deletions[$key]) && is_array($definition[$key])) {
+			if (array_key_exists($key, $definition) && is_array($deletions[$key]) && is_array($definition[$key])) {
 				$this->applyRevisionDeletions($definition[$key], $deletions[$key]);
 			}
 		}

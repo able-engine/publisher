@@ -151,10 +151,11 @@ class Transaction {
 			$response['success'] = false;
 			$response['errors'] = array();
 			foreach ($this->errors as $error) {
+				/** @var \Exception $error */
 				$response['errors'][] = array(
 					'message' => $error->getMessage(),
 					'developer' => get_class($error),
-					'trace' => $error->getTraceAsString(),
+					'trace' => $error->getTrace(),
 				);
 			}
 		}
