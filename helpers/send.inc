@@ -42,11 +42,12 @@ function publisher_send_entities(array $entities, Remote $remote, array $options
 
 		// Add the entity to the transaction session.
 		if (!$session->addRootEntity($entity, $options)) {
-			$message = t('Cannot send entity :label [<strong>:type</strong> <code>:id</code>]. Publisher currently only supports sending a maximum of 30 entities at a time.',
+			$message = t('Cannot send entity :label [<strong>:type</strong> <code>:id</code>]. Publisher currently only supports sending a maximum of :max entities at a time.',
 				array(
 					':label' => entity_label($entity->type(), $entity->definition),
 					':type' => $entity->type(),
 					':id' => $entity->id(),
+					':max' => PUBLISHER_MAX_ENTITIES,
 				));
 			drupal_set_message($message, 'error');
 			watchdog('publisher', $message, array(), WATCHDOG_WARNING);

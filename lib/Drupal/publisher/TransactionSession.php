@@ -192,8 +192,8 @@ class TransactionSession {
 	 */
 	public function addRootEntity(Entity $entity, array $options = array())
 	{
-		// Do not allow adding more than 30 entities at a time.
-		if (count($this->root_entities) >= 30) {
+		// Do not allow adding more than PUBLISHER_MAX_ENTITIES entities at a time.
+		if (count($this->root_entities) > PUBLISHER_MAX_ENTITIES) {
 			return false;
 		}
 

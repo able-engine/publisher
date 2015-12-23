@@ -6,6 +6,8 @@ use Drupal\publisher\Forms\SyncMenuLinksForm;
 
 require_once('publisher.admin.inc');
 
+define('PUBLISHER_MAX_ENTITIES', 50);
+
 function publisher_menu()
 {
 	$path_manager = PathManager::init()
