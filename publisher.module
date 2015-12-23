@@ -1,16 +1,8 @@
 <?php
 
 use AbleCore\Modules\PathManager;
-use Drupal\publisher\Dependencies\RevisionResolver;
 use Drupal\publisher\Forms\EntityStatusForm;
-use Drupal\publisher\Remote;
-use Drupal\publisher\Entity;
-use Drupal\publisher\EntityDiff;
-use Drupal\publisher\Dependencies\Resolver;
-use Drupal\publisher\Batch\Operation;
-use Drupal\publisher\Batch\OperationQueue;
 use Drupal\publisher\Forms\SyncMenuLinksForm;
-use Drupal\publisher\Transaction;
 
 require_once('publisher.admin.inc');
 
