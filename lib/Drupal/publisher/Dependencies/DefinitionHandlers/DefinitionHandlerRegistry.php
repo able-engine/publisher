@@ -29,8 +29,10 @@ class DefinitionHandlerRegistry {
 		self::$handlers[] = new TextAreaLinkReferenceHandler();
 		self::$handlers[] = new IDHandler();
 
-		if (module_exists('imagefield_crop'))
+		if (module_exists('imagefield_crop')) {
 			self::$handlers[] = new ImageCropFieldHandler();
+			self::$handlers[] = new ImageCropWidgetFieldHandler();
+		}
 
 		if (module_exists('workbench_moderation'))
 			self::$handlers[] = new WorkbenchModerationHandler();
