@@ -21,7 +21,8 @@ class ImageCropFieldHandler extends FieldHandlerBase {
 			throw new ImageCropFieldHandlerException('The field ' . $field_name . ' does not have a file ID.');
 		}
 
-		$entity = Entity::load($value['fid'], 'file');
+		$fid = isset($value['fid']['original'])? $value['fid']['original'] : $value['fid'];
+		$entity = Entity::load($fid, 'file');
 		if (!$entity) {
 			throw new FileReferenceHandlerException('The field ' . $field_name . ' has no value.');
 		}
